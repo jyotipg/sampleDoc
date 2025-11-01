@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant D as DLV Service
+    participant LB as AES Load Balancer
+    participant AES as Accounting Entry Service (Pod)
+    participant PMS as Payment Marshal Service
+    participant DB as Account Database
+
+    Note over D, DB: Transaction Initiation Phase
+    D->>+LB: POST /api/v1/transaction<br/>{debitAcc: "A", creditAcc: "B", amount: 100}
+    LB->>+AES: Route Request
+
+    Note over AES, PMS: Critical Section: Lock Acquisition
+    AES->>+PMS: POST /marshal/lock<br/>{debitAccountId: "A", creditAccountId: "B"}
+    Note right of PMS: Locking Logic<br/>- Checks for existing locks<br/>- Acquires exclusive lock for A<br/>- Acquires exclusive lock for B
+    PMS->>+DB: SELECT ... FOR UPDATE (Account A)
+    PMS->>+DB: SELECT ... FOR UPDATE (Account B)
+    DB-->>-PMS: Lock Acquired (A)
+    DB-->>-PMS: Lock Acquired (B)
+    PMS-->>-AES: 200 OK (Locks Acquired)
+
+    Note over AES, DB: Secure Transaction Processing
+    AES->>+DB: BEGIN TRANSACTION
+    AES->>+DB: UPDATE accounts SET balance = balance - 100 WHERE id = 'A'
+    AES->>+DB: UPDATE accounts SET balance = balance + 100 WHERE id = 'B'
+    AES->>+DB: COMMIT
+    DB-->>-AES: Success
+
+    Note over AES, PMS: Critical Section: Lock Release
+    AES->>+PMS: POST /marshal/unlock<br/>{debitAccountId: "A", creditAccountId: "B"}
+    PMS->>+DB: Release Lock (Account A)
+    PMS->>+DB: Release Lock (Account B)
+    DB-->>-PMS: Locks Released
+    PMS-->>-AES: 200 OK (Locks Released)
+
+    Note over D, DB: Final Response
+    AES-->>-LB: 200 OK (Transaction Successful)
+    LB-->>-D: 200 OK

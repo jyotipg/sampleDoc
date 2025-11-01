@@ -1,0 +1,23 @@
+graph TB
+    subgraph Cloud/K8s Cluster
+        subgraph AES Deployment
+            AES_LB[AES Load Balancer]
+            AES_P1[AES Pod 1]
+            AES_P2[AES Pod 2]
+            AES_P3[AES Pod N...]
+        end
+
+        subgraph PMS Deployment
+            PMS_S[Payment Marshal Service<br/>(Single Instance)]
+        end
+
+        subgraph Data Layer
+            DB[(Account DB<br/>(With Locking Primitives))]
+        end
+    end
+
+    DLV_External[DLV Service] --> AES_LB
+    AES_P1 --> PMS_S
+    AES_P2 --> PMS_S
+    AES_P3 --> PMS_S
+    PMS_S --> DB

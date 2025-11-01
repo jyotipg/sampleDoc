@@ -1,0 +1,24 @@
+graph TD
+    subgraph Consumer Layer
+        DLV[DLV Service]
+    end
+
+    subgraph API Layer
+        AES[Accounting Entry Service<br/>Load Balancer]
+    end
+
+    subgraph Service Layer
+        AES_Pod1[AES Pod 1]
+        AES_Pod2[AES Pod 2]
+        PMS[Payment Marshal Service<br/>Centralized Instance]
+    end
+
+    subgraph Data Layer
+        DB[(Account Database)]
+    end
+
+    DLV -- HTTP Request --> AES;
+    AES -- Routes Request --> AES_Pod1;
+    AES_Pod1 -- Locks Accounts via REST --> PMS;
+    PMS -- Acquires Locks --> DB;
+    AES_Pod1 -- Processes Transaction --> DB;

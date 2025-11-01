@@ -1,0 +1,27 @@
+based on below meeting notes, please create system design and various design digaram to prepare technical system design document
+Meeting notes:
+
+Payment Marshal Service Architecture and Implementation: Jyoti presented the architecture and implementation details of the new Payment Marshal Service, explaining its integration with the accounting entry service and its role in managing account-level locking to ensure safe and consistent bulk transaction processing, with Vaibhav and Akhilesh providing clarifications and feedback.
+Locking Strategy for Debit and Credit Accounts: Vaibhav, Akhilesh, and Jyoti discussed the rationale and scenarios for locking both debit and credit accounts during transaction processing, considering various transaction types and concurrency issues, and agreed on the need to document and validate the approach with Gideon.
+Locking Both Accounts: The team clarified that both debit and credit accounts are locked for each transaction to prevent concurrent modifications, as either account could be involved in multiple transactions in different roles.
+Scenario Analysis: Akhilesh and Vaibhav discussed scenarios such as single debit-multiple credit (SDMC) and single debit-single credit (SDSC), highlighting cases where the same account could appear as debit in one transaction and credit in another, necessitating locks on both.
+Alignment with Stakeholders: Vaibhav emphasized the importance of aligning the locking strategy with Gideon before go-live, suggesting the preparation of documentation and scenario analysis for review and sign-off to avoid late-stage escalations.
+Flexibility in Locking Logic: Jyoti noted that the implementation can be adjusted to lock only debit accounts if required, but the current approach is to lock both, pending stakeholder agreement.
+
+
+
+Service Deployment and Consumer Details: Vaibhav and Jyoti discussed the deployment structure of the Payment Marshal Service and the new accounting entry service, clarifying their endpoints, load balancing, and identifying DLV as the primary consumer.
+Service Endpoints and Load Balancing: The Payment Marshal Service operates as a centralized instance with its own URI, while the new accounting entry service is deployed with multiple pods behind a load balancer, each exposing its own URI.
+Consumer Identification: Jyoti confirmed that DLV is the main consumer of the new accounting entry service, which interacts with the Payment Marshal Service for account locking.
+Testing and Performance Validation: Jyoti and Vaibhav briefly discussed the importance of performance testing for the Payment Marshal Service, mentioning the use of JMeter for validation.
+Performance Testing Approach: Jyoti indicated that JMeter will be used for performance testing of the Payment Marshal Service to ensure it meets required standards under load.
+
+
+Next Steps and Action Items: The team agreed to prepare comprehensive documentation of transaction scenarios and locking logic for review by Gideon, and to adjust the implementation if required based on feedback before proceeding to go-live.
+Documentation Preparation: Vaibhav instructed the team to prepare an Excel sheet detailing all possible transaction scenarios and the service's behavior in each, to be shared with Vidyan for review.
+Stakeholder Review and Alignment: The team will schedule a call with Vidyan after sharing the documentation to ensure alignment on the locking strategy and implementation details.
+Implementation Adjustments: Jyoti confirmed readiness to modify the locking logic (e.g., locking only debit accounts) if Vidyan requests changes after reviewing the documented scenarios.
+Follow-up tasks:
+
+Design Sign-Off with Hidian: Document all possible scenarios for account locking (including both debit and credit account locking), prepare an Excel sheet detailing how the service behaves in each scenario, send it to Hidian in advance, and schedule a call to review and obtain his sign-off before go-live or CITEVT. (Jyoti, Akhilesh)
+Test Data Preparation and Performance Testing: Collect accounting entry request examples and prepare test data for performance testing (e.g., using JMeter) to validate the Payment Marshall service. (Jyoti)
